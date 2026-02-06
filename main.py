@@ -190,7 +190,7 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
             with st.spinner('✨ 최적의 조합을 생성하는 중...'):
                 shuffled = shuffle_vocab(word_pairs)
                 if shuffled:
-                    st.session_state['shuffled_result'] = [item['val'] for item in shuffled]
+                    st.session_state['shuffled_result'] = shuffled
                 else:
                     st.session_state['shuffled_result'] = None
                     st.error("⚠️ 조건을 만족하는 조합을 찾지 못했습니다. 단어를 더 추가해보세요.")
@@ -198,15 +198,15 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
 # 결과가 세션 상태에 있는 경우 표시
 if st.session_state['shuffled_result']:
     st.success("✨성공적으로 섞었습니다!")
-    final_list = st.session_state['shuffled_result']
+    shuffled_items = st.session_state['shuffled_result']
     
     # 결과 출력 섹션
     st.markdown("### 📋 섞인 결과")
     
     # 가독성을 높인 리스트 뷰
     result_html = ""
-    for val in final_list:
-        result_html += f'<div class="shuffled-item">{val}</div>'
+    for item in shuffled_items:
+        result_html += f'<div class="shuffled-item">{item["val"]}</div>'
     st.markdown(result_html, unsafe_allow_html=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -214,7 +214,17 @@ if st.session_state['shuffled_result']:
     # 표 형식으로 보기 토글
     if st.checkbox("📊 표 형식으로 보기"):
         import pandas as pd
-        # 5개씩 끊어서 표로 만들기
-        rows = [final_list[i:i + 5] for i in range(0, len(final_list), 5)]
-        df = pd.DataFrame(rows)
+        
+        # 영단어와 뜻 분리
+        words = [item['val'] for item in shuffled_items if item['type'] == 'W']
+        meanings = [item['val'] for item in shuffled_items if item['type'] == 'M']
+        
+        # 데이터프레임 생성 (두 열로 나눔)
+        df = pd.DataFrame({
+            "영단어 (English)": words,
+            "뜻 (Meaning)": meanings
+        })
+        
+        # 인덱스를 1부터 시작하도록 설정
+        df.index = df.index + 1
         st.table(df)
