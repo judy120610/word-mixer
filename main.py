@@ -150,6 +150,10 @@ with st.expander("ℹ️ 섞기 규칙 안내"):
     - **연관 쌍**: 단어와 그 뜻은 최소 3칸 이상 떨어짐
     """)
 
+# 세션 상태 초기화
+if 'shuffled_result' not in st.session_state:
+    st.session_state['shuffled_result'] = None
+
 # 입력 섹션
 with st.container():
     input_text = st.text_area("단어와 뜻을 입력하세요", 
@@ -171,12 +175,10 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
                 continue
             
             # 공백(스페이스, 탭 등)을 기준으로 첫 번째만 분리
-            # 단어와 뜻 사이에 공백이 있다고 가정
             parts = line.split(maxsplit=1)
             if len(parts) == 2:
                 word_pairs.append([parts[0].strip(), parts[1].strip()])
             else:
-                # 공백이 없는 경우 기존 기호들( :, -, , )이라도 확인 (하위 호환성)
                 for delimiter in [':', '-', ',']:
                     if delimiter in line:
                         word_pairs.append([p.strip() for p in line.split(delimiter, 1)])
@@ -187,29 +189,32 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
         else:
             with st.spinner('✨ 최적의 조합을 생성하는 중...'):
                 shuffled = shuffle_vocab(word_pairs)
-            
-            if shuffled:
-                st.success("✨ 성공적으로 섞었습니다!")
-                
-                final_list = [item['val'] for item in shuffled]
-                
-                # 결과 출력 섹션
-                st.markdown("### 📋 섞인 결과")
-                
-                # 가독성을 높인 리스트 뷰
-                result_html = ""
-                for val in final_list:
-                    result_html += f'<div class="shuffled-item">{val}</div>'
-                st.markdown(result_html, unsafe_allow_html=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                
-                # 표 형식으로 보기 토글
-                if st.checkbox("📊 표 형식으로 보기"):
-                    import pandas as pd
-                    # 10개씩 끊어서 표로 만들기 (학습 편의성)
-                    rows = [final_list[i:i + 5] for i in range(0, len(final_list), 5)]
-                    df = pd.DataFrame(rows)
-                    st.table(df)
-            else:
-                st.error("⚠️ 조건을 만족하는 조합을 찾지 못했습니다. 단어를 더 추가해보세요.")
+                if shuffled:
+                    st.session_state['shuffled_result'] = [item['val'] for item in shuffled]
+                else:
+                    st.session_state['shuffled_result'] = None
+                    st.error("⚠️ 조건을 만족하는 조합을 찾지 못했습니다. 단어를 더 추가해보세요.")
+
+# 결과가 세션 상태에 있는 경우 표시
+if st.session_state['shuffled_result']:
+    st.success("✨成功적으로 섞었습니다!")
+    final_list = st.session_state['shuffled_result']
+    
+    # 결과 출력 섹션
+    st.markdown("### 📋 섞인 결과")
+    
+    # 가독성을 높인 리스트 뷰
+    result_html = ""
+    for val in final_list:
+        result_html += f'<div class="shuffled-item">{val}</div>'
+    st.markdown(result_html, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # 표 형식으로 보기 토글
+    if st.checkbox("📊 표 형식으로 보기"):
+        import pandas as pd
+        # 5개씩 끊어서 표로 만들기
+        rows = [final_list[i:i + 5] for i in range(0, len(final_list), 5)]
+        df = pd.DataFrame(rows)
+        st.table(df)
