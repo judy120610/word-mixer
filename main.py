@@ -204,12 +204,12 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # 다운로드 버튼
-                st.download_button(
-                    label="💾 결과 다운로드 (.txt)",
-                    data="\n".join(final_list),
-                    file_name="shuffled_vocab.txt",
-                    mime="text/plain"
-                )
+                # 표 형식으로 보기 토글
+                if st.checkbox("📊 표 형식으로 보기"):
+                    import pandas as pd
+                    # 10개씩 끊어서 표로 만들기 (학습 편의성)
+                    rows = [final_list[i:i + 5] for i in range(0, len(final_list), 5)]
+                    df = pd.DataFrame(rows)
+                    st.table(df)
             else:
                 st.error("⚠️ 조건을 만족하는 조합을 찾지 못했습니다. 단어를 더 추가해보세요.")
