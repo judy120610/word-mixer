@@ -197,7 +197,7 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
 
 # 결과가 세션 상태에 있는 경우 표시
 if st.session_state['shuffled_result']:
-    st.success("✨成功적으로 섞었습니다!")
+    st.success("✨성공적으로 섞었습니다!")
     final_list = st.session_state['shuffled_result']
     
     # 결과 출력 섹션
