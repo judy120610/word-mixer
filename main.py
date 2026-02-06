@@ -153,7 +153,7 @@ with st.expander("ℹ️ 섞기 규칙 안내"):
 # 입력 섹션
 with st.container():
     input_text = st.text_area("단어와 뜻을 입력하세요", 
-                             placeholder="apple:사과\nbanana:바나나\ncherry:체리...",
+                             placeholder="apple-사과\nbanana-바나나\ncherry-체리...",
                              height=300,
                              label_visibility="collapsed")
 
@@ -171,6 +171,8 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
                 continue
             if ':' in line:
                 word_pairs.append([part.strip() for part in line.split(':', 1)])
+            elif '-' in line:
+                word_pairs.append([part.strip() for part in line.split('-', 1)])
             elif ',' in line:
                 word_pairs.append([part.strip() for part in line.split(',', 1)])
         
