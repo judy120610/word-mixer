@@ -215,15 +215,21 @@ if st.session_state['shuffled_result']:
     if st.checkbox("📊 표 형식으로 보기"):
         import pandas as pd
         
-        # 영단어와 뜻 분리
-        words = [item['val'] for item in shuffled_items if item['type'] == 'W']
-        meanings = [item['val'] for item in shuffled_items if item['type'] == 'M']
+        # 순서대로 테이블 데이터 생성
+        table_data = []
+        for item in shuffled_items:
+            if item['type'] == 'W':
+                table_data.append({
+                    "영단어 (English)": item['val'],
+                    "뜻 (Meaning)": ""
+                })
+            else:
+                table_data.append({
+                    "영단어 (English)": "",
+                    "뜻 (Meaning)": item['val']
+                })
         
-        # 데이터프레임 생성 (두 열로 나눔)
-        df = pd.DataFrame({
-            "영단어 (English)": words,
-            "뜻 (Meaning)": meanings
-        })
+        df = pd.DataFrame(table_data)
         
         # 인덱스를 1부터 시작하도록 설정
         df.index = df.index + 1
