@@ -153,7 +153,7 @@ with st.expander("ℹ️ 섞기 규칙 안내"):
 # 입력 섹션
 with st.container():
     input_text = st.text_area("단어와 뜻을 입력하세요", 
-                             placeholder="apple-사과\nbanana-바나나\ncherry-체리...",
+                             placeholder="apple 사과, 청사과\nbanana 바나나\ncherry 체리...",
                              height=300,
                              label_visibility="collapsed")
 
@@ -169,12 +169,18 @@ if st.button("🔀 무작위 섞기 실행", key="shuffle_btn"):
             line = line.strip()
             if not line:
                 continue
-            if ':' in line:
-                word_pairs.append([part.strip() for part in line.split(':', 1)])
-            elif '-' in line:
-                word_pairs.append([part.strip() for part in line.split('-', 1)])
-            elif ',' in line:
-                word_pairs.append([part.strip() for part in line.split(',', 1)])
+            
+            # 공백(스페이스, 탭 등)을 기준으로 첫 번째만 분리
+            # 단어와 뜻 사이에 공백이 있다고 가정
+            parts = line.split(maxsplit=1)
+            if len(parts) == 2:
+                word_pairs.append([parts[0].strip(), parts[1].strip()])
+            else:
+                # 공백이 없는 경우 기존 기호들( :, -, , )이라도 확인 (하위 호환성)
+                for delimiter in [':', '-', ',']:
+                    if delimiter in line:
+                        word_pairs.append([p.strip() for p in line.split(delimiter, 1)])
+                        break
         
         if len(word_pairs) < 5:
             st.error("조건을 만족시키기 위해 최소 5개 이상의 단어 쌍이 필요합니다.")
