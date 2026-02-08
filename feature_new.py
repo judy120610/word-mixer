@@ -63,7 +63,17 @@ def run():
     if df is not None and not df.empty:
         # Day 컬럼 확인 및 고유값 추출
         if 'Day' in df.columns:
-            days = sorted(df['Day'].unique())
+            # Handle mixed data types and sorting
+            unique_days = df['Day'].unique()
+            # Filter out empty values
+            unique_days = [d for d in unique_days if pd.notna(d) and str(d).strip() != '']
+            
+            try:
+                # Try sorting numerically
+                days = sorted(unique_days, key=lambda x: int(str(x)))
+            except ValueError:
+                # Fallback to string sorting
+                days = sorted(unique_days, key=lambda x: str(x))
             selected_days = st.multiselect("학습할 Day를 선택하세요 (최대 3개)", days, max_selections=3)
 
             if st.button("🔀 불러오기 및 섞기", key="fnew_shuffle_btn"):
