@@ -1,12 +1,17 @@
 import streamlit as st
 import pandas as pd
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from utils import shuffle_vocab
 import os
+import json
 
 # Google Sheets 연결 설정
-SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+# gspread 6.0.0 이상에서는 scope가 자동으로 처리되지만, 명시적으로 설정
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
 KEY_FILE = os.path.join(os.path.dirname(__file__), 'key', 'credentials.json')
 SPREADSHEET_ID = '1nlA5L-ttu7eqdJozYGxgXceQhxKg53e2QKh5GzLsDR4'
 SHEET_NAME = '시트1'
@@ -19,16 +24,19 @@ def load_data_from_sheet():
         if 'gcp_service_account' in st.secrets:
             secret_value = st.secrets['gcp_service_account']
             if isinstance(secret_value, dict):
-                creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_value, SCOPE)
+                creds = Credentials.from_service_account_info(secret_value, scopes=SCOPES)
             else:
                 # If it's a string (e.g., raw JSON), parse it
-                import json
-                creds_dict = json.loads(secret_value)
-                creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+                try:
+                    creds_dict = json.loads(secret_value)
+                    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+                except json.JSONDecodeError:
+                    st.error("Failed to parse GCP credentials from secrets. Ensure it is valid JSON.")
+                    return None
         
         # 2. Fallback to local file (for local development)
         elif os.path.exists(KEY_FILE):
-            creds = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, SCOPE)
+             creds = Credentials.from_service_account_file(KEY_FILE, scopes=SCOPES)
         
         if not creds:
              st.error("GCP credentials not found. Please set 'gcp_service_account' in Streamlit secrets or provide 'key/credentials.json' locally.")
