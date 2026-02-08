@@ -104,5 +104,5 @@ with st.sidebar:
 # Page Routing
 if page == "직접 입력 모드":
     feature_1.run()
-elif page == "구글 시트 모드":
+elif page == "구글 시트 모드(Word Master 하이스트 전용)":
     feature_new.run()
