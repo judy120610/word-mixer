@@ -1,0 +1,29 @@
+# Secrets
+key/
+.env
+secrets.toml
+
+# Google Sheets Credentials
+credentials.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Verification Scripts
+verify_sheets.py
