@@ -14,7 +14,14 @@ SHEET_NAME = '시트1'
 @st.cache_data(ttl=600)
 def load_data_from_sheet():
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, SCOPE)
+        # 1. Try loading from Streamlit secrets (for deployment)
+        if 'gcp_service_account' in st.secrets:
+            creds_dict = st.secrets['gcp_service_account']
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+        # 2. Fallback to local file (for local development)
+        else:
+            creds = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, SCOPE)
+            
         client = gspread.authorize(creds)
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
         data = sheet.get_all_records()
