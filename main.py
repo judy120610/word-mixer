@@ -91,7 +91,7 @@ st.markdown("""
 # Sidebar Navigation
 with st.sidebar:
     st.title("메뉴 선택")
-    page = st.radio("기능을 선택하세요:", ["직접 입력 모드", "구글 시트 모드"])
+    page = st.radio("기능을 선택하세요:", ["직접 입력 모드", "구글 시트 모드(Word Master 하이스트 전용)"])
     
     st.markdown("---")
     with st.expander("ℹ️ 섞기 규칙 안내"):
