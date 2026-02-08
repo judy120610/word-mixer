@@ -14,14 +14,26 @@ SHEET_NAME = '시트1'
 @st.cache_data(ttl=600)
 def load_data_from_sheet():
     try:
+        creds = None
         # 1. Try loading from Streamlit secrets (for deployment)
         if 'gcp_service_account' in st.secrets:
-            creds_dict = st.secrets['gcp_service_account']
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+            secret_value = st.secrets['gcp_service_account']
+            if isinstance(secret_value, dict):
+                creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_value, SCOPE)
+            else:
+                # If it's a string (e.g., raw JSON), parse it
+                import json
+                creds_dict = json.loads(secret_value)
+                creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+        
         # 2. Fallback to local file (for local development)
-        else:
+        elif os.path.exists(KEY_FILE):
             creds = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, SCOPE)
-            
+        
+        if not creds:
+             st.error("GCP credentials not found. Please set 'gcp_service_account' in Streamlit secrets or provide 'key/credentials.json' locally.")
+             return None
+
         client = gspread.authorize(creds)
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
         data = sheet.get_all_records()
