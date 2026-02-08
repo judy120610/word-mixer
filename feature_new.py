@@ -60,36 +60,42 @@ def run():
     with st.spinner('구글 스프레드시트에서 데이터를 불러오는 중...'):
         df = load_data_from_sheet()
 
-    if df is not None and not df.empty:
-        # Day 컬럼 확인 및 고유값 추출
-        if 'Day' in df.columns:
-            # Handle mixed data types and sorting
-            unique_days = df['Day'].unique()
-            # Filter out empty values
-            unique_days = [d for d in unique_days if pd.notna(d) and str(d).strip() != '']
-            
-            try:
-                # Try sorting numerically
-                days = sorted(unique_days, key=lambda x: int(str(x)))
-            except ValueError:
-                # Fallback to string sorting
-                days = sorted(unique_days, key=lambda x: str(x))
-            selected_days = st.multiselect("학습할 Day를 선택하세요 (최대 3개)", days, max_selections=3)
+    if df is None:
+        return
 
-            if st.button("🔀 불러오기 및 섞기", key="fnew_shuffle_btn"):
-                if not selected_days:
-                    st.warning("최소 하나의 Day를 선택해주세요.")
-                else:
-                    # 선택된 Day의 데이터 필터링
-                    day_data = df[df['Day'].isin(selected_days)]
-                
+    if df.empty:
+        st.warning("⚠️ 구글 시트에서 데이터를 불러왔지만 내용이 없습니다. 시트에 데이터가 있는지 확인해주세요.")
+        return
+
+    # Day 컬럼 확인 및 고유값 추출
+    if 'Day' in df.columns:
+        # Handle mixed data types and sorting
+        unique_days = df['Day'].unique()
+        # Filter out empty values
+        unique_days = [d for d in unique_days if pd.notna(d) and str(d).strip() != '']
+        
+        try:
+            # Try sorting numerically
+            days = sorted(unique_days, key=lambda x: int(str(x)))
+        except ValueError:
+            # Fallback to string sorting
+            days = sorted(unique_days, key=lambda x: str(x))
+        selected_days = st.multiselect("학습할 Day를 선택하세요 (최대 3개)", days, max_selections=3)
+
+        if st.button("🔀 불러오기 및 섞기", key="fnew_shuffle_btn"):
+            if not selected_days:
+                st.warning("최소 하나의 Day를 선택해주세요.")
+            else:
+                # 선택된 Day의 데이터 필터링
+                day_data = df[df['Day'].isin(selected_days)]
+            
                 word_pairs = []
                 for _, row in day_data.iterrows():
                     word = str(row.get('Word', '')).strip()
                     meaning = str(row.get('Meaning', '')).strip()
                     if word and meaning:
                         word_pairs.append([word, meaning])
-                
+            
                 if len(word_pairs) < 5:
                     st.error(f"선택한 Day {selected_days}에 저장된 단어가 부족합니다 (합계 최소 5개 필요).")
                 else:
@@ -100,8 +106,9 @@ def run():
                         else:
                             st.session_state['fnew_shuffled_result'] = None
                             st.error("⚠️ 조건을 만족하는 조합을 찾지 못했습니다.")
-        else:
-            st.error("'Day' 컬럼을 찾을 수 없습니다. 시트 헤더를 확인해주세요.")
+    else:
+        st.error(f"⚠️ 'Day' 컬럼을 찾을 수 없습니다. (발견된 컬럼: {list(df.columns)})")
+        st.info("구글 시트의 첫 번째 행(Header)에 'Day', 'Word', 'Meaning'이 정확히 입력되어 있는지 확인해주세요.")
     
     # 결과 표시 (feature_new 전용 세션 상태 사용)
     if 'fnew_shuffled_result' in st.session_state and st.session_state['fnew_shuffled_result']:
