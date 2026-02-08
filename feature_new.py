@@ -64,11 +64,14 @@ def run():
         # Day 컬럼 확인 및 고유값 추출
         if 'Day' in df.columns:
             days = sorted(df['Day'].unique())
-            selected_day = st.selectbox("학습할 Day를 선택하세요", days)
+            selected_days = st.multiselect("학습할 Day를 선택하세요 (최대 3개)", days, max_selections=3)
 
             if st.button("🔀 불러오기 및 섞기", key="fnew_shuffle_btn"):
-                # 선택된 Day의 데이터 필터링
-                day_data = df[df['Day'] == selected_day]
+                if not selected_days:
+                    st.warning("최소 하나의 Day를 선택해주세요.")
+                else:
+                    # 선택된 Day의 데이터 필터링
+                    day_data = df[df['Day'].isin(selected_days)]
                 
                 word_pairs = []
                 for _, row in day_data.iterrows():
@@ -78,7 +81,7 @@ def run():
                         word_pairs.append([word, meaning])
                 
                 if len(word_pairs) < 5:
-                    st.error(f"Day {selected_day}에 저장된 단어가 부족합니다 (최소 5개 필요).")
+                    st.error(f"선택한 Day {selected_days}에 저장된 단어가 부족합니다 (합계 최소 5개 필요).")
                 else:
                     with st.spinner('✨ 데이터를 섞는 중...'):
                         shuffled = shuffle_vocab(word_pairs)
