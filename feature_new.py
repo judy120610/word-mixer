@@ -5,6 +5,7 @@ from google.oauth2.service_account import Credentials
 from utils import shuffle_vocab
 import os
 import json
+import re
 
 # Google Sheets 연결 설정
 # gspread 6.0.0 이상에서는 scope가 자동으로 처리되지만, 명시적으로 설정
@@ -74,12 +75,24 @@ def run():
         # Filter out empty values
         unique_days = [d for d in unique_days if pd.notna(d) and str(d).strip() != '']
         
+        def smart_sort_key(val):
+            s = str(val)
+            # Find numbers in the string (e.g., "Day 1" -> 1)
+            nums = re.findall(r'\d+', s)
+            if nums:
+                return int(nums[0])
+            # If valid integer
+            try:
+                return int(s)
+            except ValueError:
+                # Fallback: return infinity so they go to end, or just 0
+                return float('inf')
+
         try:
-            # Try sorting numerically
-            days = sorted(unique_days, key=lambda x: int(str(x)))
-        except ValueError:
-            # Fallback to string sorting
+            days = sorted(unique_days, key=smart_sort_key)
+        except Exception:
             days = sorted(unique_days, key=lambda x: str(x))
+            
         selected_days = st.multiselect("학습할 Day를 선택하세요 (최대 3개)", days, max_selections=3)
 
         if st.button("🔀 불러오기 및 섞기", key="fnew_shuffle_btn"):
