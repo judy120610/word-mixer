@@ -52,7 +52,7 @@ def load_data_from_sheet():
 
 def run():
     st.markdown('<div class="header-container">', unsafe_allow_html=True)
-    st.markdown('<h2 class="title-text">📅 구글 시트 모드</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="title-text">📅 Word Master 하이스트 전용</h2>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle-text">날짜를 선택하여 저장된 단어를 불러옵니다.</p>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
