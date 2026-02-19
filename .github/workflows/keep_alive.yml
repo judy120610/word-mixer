@@ -1,10 +1,10 @@
-name: Keep Streamlit App Alive
+name: Keep Streamlit App Alive (Every 6 Hours)
 
 on:
   schedule:
-    # 매일 00:00 UTC에 실행 (한국 시간 오전 9시)
-    - cron: '0 0 * * *'
-  workflow_dispatch: # 수동으로 실행하고 싶을 때 사용
+    # 6시간마다 실행 (0분, 6의 배수 시간)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # 필요할 때 수동으로도 실행 가능
 
 jobs:
   ping:
@@ -12,4 +12,5 @@ jobs:
     steps:
       - name: Ping Streamlit App
         run: |
-          curl -I https://your-app-name.streamlit.app/
+          # -L은 리다이렉트 허용, -s는 정적 모드(로그 간소화)
+          curl -Ls -I https://your-app-name.streamlit.app/ | grep "HTTP/"
